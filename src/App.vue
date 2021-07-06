@@ -1,17 +1,18 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+  <div>
+    <img alt="Vue logo" src="./assets/logo.png" />
+    <p>A charts demo which has a dropdown of crypto's to select and then you can see the history of the coin price on a chart.</p>
+    <crypto-chart />
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import HelloWorld from "./components/HelloWorld.vue";
+import CryptoChart from "./components/CryptoChart.vue";
 
 export default defineComponent({
   name: "App",
-  components: {
-    HelloWorld,
-  },
+  components: { CryptoChart },
 });
 </script>
 
