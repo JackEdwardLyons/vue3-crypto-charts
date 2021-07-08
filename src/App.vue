@@ -2,17 +2,25 @@
   <div>
     <img alt="Vue logo" src="./assets/logo.png" />
     <p>A charts demo which has a dropdown of crypto's to select and then you can see the history of the coin price on a chart.</p>
+
     <crypto-chart />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, provide } from "vue";
 import CryptoChart from "./components/CryptoChart.vue";
 
 export default defineComponent({
   name: "App",
   components: { CryptoChart },
+  setup(props) {
+    const username = provide("username", "Jack Lyons");
+
+    return {
+      username,
+    };
+  },
 });
 </script>
 

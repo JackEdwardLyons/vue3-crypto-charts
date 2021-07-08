@@ -1,48 +1,52 @@
 <template>
   <section>
-    <h1>Crypto tracker chart</h1>
-    <button @click="updateSeriesValues">update chart values</button>
+    <h1>Crypto tracker chart for {{ username }}</h1>
+
     <div :class="$style.textCenter">
-      <apexchart width="500" type="area" :options="chartOptions" :series="[series]" />
+      <apexchart style="width: 80%; max-width: 1200px" type="area" :options="chartOptions" :series="[sparklineSeries]" />
     </div>
   </section>
 </template>
 
-<script>
-import { reactive } from "vue";
+<script lang="ts">
+import { inject, reactive, onMounted, ref, Ref } from "vue";
 import VueApexCharts from "vue3-apexcharts";
+import SparkLineService from "../services/SparklineService";
+import dayjs from "dayjs";
+import { setSparkLineAxes, SparkLineModel } from "../utils/sparkline";
 
 export default {
   components: {
     apexchart: VueApexCharts,
   },
-  setup(props) {
+  setup() {
+    const sparkLineData = ref<SparkLineModel[]>([]);
+
+    onMounted(async () => {
+      const data = await SparkLineService.getSparkLine("ETH");
+      const formattedDates = data[0].timestamps.map((d) => dayjs(d).format("DD/MM/YY"));
+      const formattedPrices = data[0].prices.map((p) => Number(p).toFixed());
+
+      sparkLineData.value = setSparkLineAxes(formattedDates, formattedPrices);
+    });
+
     const chartOptions = reactive({
       chart: {
         id: "vuechart-example",
       },
-      xaxis: {
-        categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998],
-      },
     });
 
-    const series = reactive({
-      name: "series-1",
-      data: [30, 40, 35, 50, 49, 60, 70, 91],
+    const sparklineSeries = reactive({
+      name: "sparkline-series",
+      data: sparkLineData,
     });
 
-    const updateSeriesValues = () => {
-      // as a ref
-      // series.value[0].data = [30, 40, 35, 50, 49, 60, 70, 200];
-
-      // as a reactive
-      series.data = [30, 40, 35, 50, 49, 60, 70, 200];
-    };
+    const username = inject("username");
 
     return {
       chartOptions,
-      series,
-      updateSeriesValues,
+      sparklineSeries,
+      username,
     };
   },
 };
