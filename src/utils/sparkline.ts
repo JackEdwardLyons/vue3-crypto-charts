@@ -1,7 +1,7 @@
-export type SparkLineModel = {
+export interface SparkLineModel {
   x: string;
   y: string;
-};
+}
 
 export function setSparkLineAxes(sparkLineDates: any, sparkLinePrices: any): Array<SparkLineModel> {
   const sparkLineData = [];

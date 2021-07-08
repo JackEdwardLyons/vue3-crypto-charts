@@ -1,6 +1,10 @@
 <template>
   <section>
-    <h1>Crypto tracker chart for {{ username }}</h1>
+    <h1>Crypto tracker chart</h1>
+
+    <select name="cryptocurrency-select" id="cryptocurrency-select" :class="$style.select" v-model="cryptoChoice">
+      <option v-for="coin in coins" :value="coin" :key="coin" v-text="coin" />
+    </select>
 
     <div :class="$style.textCenter">
       <apexchart style="width: 80%; max-width: 1200px" type="area" :options="chartOptions" :series="[sparklineSeries]" />
@@ -9,25 +13,31 @@
 </template>
 
 <script lang="ts">
-import { inject, reactive, onMounted, ref, Ref } from "vue";
+import { reactive, watchEffect, ref } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import SparkLineService from "../services/SparklineService";
-import dayjs from "dayjs";
-import { setSparkLineAxes, SparkLineModel } from "../utils/sparkline";
+import { setSparkLineAxes } from "../utils/sparkline";
 
 export default {
   components: {
     apexchart: VueApexCharts,
   },
   setup() {
-    const sparkLineData = ref<SparkLineModel[]>([]);
+    const sparkLineData = ref<any>([]);
+    const fetchStatus = ref("idle");
+    const cryptoChoice = ref("BTC");
+    const coins = ref(["BTC", "ETH", "XRP", "COMP", "KSM"]);
 
-    onMounted(async () => {
-      const data = await SparkLineService.getSparkLine("ETH");
-      const formattedDates = data[0].timestamps.map((d) => dayjs(d).format("DD/MM/YY"));
-      const formattedPrices = data[0].prices.map((p) => Number(p).toFixed());
-
-      sparkLineData.value = setSparkLineAxes(formattedDates, formattedPrices);
+    watchEffect(async () => {
+      fetchStatus.value = "fetching";
+      try {
+        const { formattedDates, formattedPrices } = await SparkLineService.getSparkLine(cryptoChoice.value);
+        sparkLineData.value = setSparkLineAxes(formattedDates, formattedPrices);
+        fetchStatus.value = "success";
+      } catch (error) {
+        fetchStatus.value = "error";
+        console.log({ error });
+      }
     });
 
     const chartOptions = reactive({
@@ -41,12 +51,11 @@ export default {
       data: sparkLineData,
     });
 
-    const username = inject("username");
-
     return {
       chartOptions,
       sparklineSeries,
-      username,
+      cryptoChoice,
+      coins,
     };
   },
 };
@@ -59,5 +68,9 @@ export default {
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+.select {
+  padding: 1rem;
 }
 </style>
